@@ -1,44 +1,70 @@
 # StockQuote plugin for Craft CMS 3.x
 
+Simple real-time stock quotes from the [Alpha Vantage API](https://www.alphavantage.co/documentation/).
 
-Simple real-time stock quotes from the Alpha Vantage API.
+The Alpha Vantage API is free, but you must [register to receive and API Key](https://www.alphavantage.co/support/#api-key).
 
-![Screenshot](resources/img/plugin-logo.png)
-
-## Requirements
-
-This plugin requires Craft CMS 3.0.0-beta.23 or later.
+This is a 3.x port of [Surprise Highway](https://github.com/surprisehighway/craft-stockquote) 2.0 version of the same plugin.
 
 ## Installation
 
-To install the plugin, follow these instructions.
+To install Stock Quote, follow these steps:
 
-1. Open your terminal and go to your Craft project:
+1. Download & unzip the file and place the `stockquote` directory into your `craft/plugins` directory
+2.  -OR- do a `git clone https://github.com/surprisehighway/craft-stockquote.git` directly into your `craft/plugins` folder.  You can then update it with `git pull`
+3.  -OR- install with Composer via `composer require surprisehighway/craft-stockquote`
+4. Install plugin in the Craft Control Panel under Settings > Plugins
+5. The plugin folder should be named `stockquote` for Craft to see it.  GitHub recently started appending `-master` (the branch name) to the name of the folder for zip file downloads.
 
-        cd /path/to/project
+Stock Quote works on Craft 2.6.x.
 
-2. Then tell Composer to load the plugin:
+## Settings
 
-        composer require /stock-quote
+1. Navigate to `Settings > Stock Quote`.
+2. Enter your [Alpha Vantage API Key](https://www.alphavantage.co/support/#api-key).
+3. Save the plugin settings.
 
-3. In the Control Panel, go to Settings → Plugins and click the “Install” button for StockQuote.
+## Usage
 
-## StockQuote Overview
+```
+{% set quote = craft.stockQuote.getQuote('MSFT') %}
 
--Insert text here-
+{% if quote|length %}
+	{{ quote.symbol }}
+	{{ quote.timezone }}
+	{{ quote.last }}
+	{{ quote.date|date('F j, Y g:i a') }}
+	{{ quote.change }}
+	{{ quote.open }}
+	{{ quote.high }}
+	{{ quote.low }}
+	{{ quote.volume }}
+	{{ quote.previous }}
+	{{ quote.percent }}
+{% endif %}
+```
 
-## Configuring StockQuote
+#### Parameters
 
--Insert text here-
+* **Symbol**: Required.    
+* **Expire**: Optional. Cache duration in seconds. Default is `1200` (20 minutes).
 
-## Using StockQuote
+## Refresh interval and caching
 
--Insert text here-
+Stock Quote uses the [Alpha Vantage Time Series Daily API](https://www.alphavantage.co/documentation/#daily). 
 
-## StockQuote Roadmap
+The results from the API are close to real-time, but the plugin caches results. You can set a cache expiration duration (in seconds) to control the rate of refresh. Default is `1200` (20 minutes).
 
-Some things to do, and ideas for potential features:
+Note that if the API is unavailable or returns an error or incomplete data the plugin will attempt to fallback to the last valid cached data.
 
-* Release it
+Wrapping the plugin output in a conditional using the Twig’s length filter is recommended.
+
+```
+{% set quote = craft.stockQuote.getQuote('MSFT', 300) %}
+
+{% if quote|length %}
+	{{ quote.last }}
+{% endif %}
+```
 
 Brought to you by [Jesse Knowles](http://www.jesseknowles.com)
