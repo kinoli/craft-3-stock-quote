@@ -1,0 +1,28 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * StockQuote plugin for Craft CMS 3.x
+ *
+ * StockQuote Settings.twig
+ *
+ * @author    Jesse Knowles
+ * @copyright Copyright (c) 2018 Jesse Knowles
+ * @link      http://www.jesseknowles.com
+ * @package   StockQuote
+ * @since     1.0.0
+ */
+#}
+
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("kinoli\\stockquote\\assetbundles\\stockquote\\StockQuoteAsset") %}
+
+{{ forms.textField({
+    label: 'API Key',
+    instructions: 'Enter your Alpha Vantage API Key here.',
+    id: 'apiKey',
+    name: 'apiKey',
+    value: settings['apiKey'],
+    errors: settings.getErrors('apiKey')
+    })
+}}
