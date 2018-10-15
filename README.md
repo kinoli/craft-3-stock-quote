@@ -31,7 +31,6 @@ Stock Quote works on Craft 2.6.x.
 
 {% if quote|length %}
 	{{ quote.symbol }}
-	{{ quote.timezone }}
 	{{ quote.last }}
 	{{ quote.date|date('F j, Y g:i a') }}
 	{{ quote.change }}
@@ -42,6 +41,12 @@ Stock Quote works on Craft 2.6.x.
 	{{ quote.previous }}
 	{{ quote.percent }}
 {% endif %}
+```
+
+If you need a json string for a chart, you can also use this...
+```
+{% set historyData = craft.stockQuote.getHistoryJson('MSFT') %}
+{{historyData}}
 ```
 
 #### Parameters
