@@ -48,8 +48,9 @@ class StockQuoteService extends Component
         }
         else
         {
+            $url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=%s&apikey=%s";
             // update current values or fallback to stale cache
-            if ($refresh = $this->fetchQuote($symbol))
+            if ($refresh = $this->fetchQuote($symbol, $url))
             {
                 $data = $refresh;
                 Craft::$app->cache->set($symbol, $data, $expire);
@@ -58,6 +59,75 @@ class StockQuoteService extends Component
             else
             {
                 $data = Craft::$app->cache->get($symbol.':stale');
+            }
+        }
+
+        // be sure we have valid data
+        if (!$data) 
+        {
+            Craft::getLogger()->log('StockQuote Error: Invalid or incomplete stock data.', LogLevel::ERROR, true);
+            return false;
+        }
+
+        // prices
+        $last = $data['Global Quote'];
+
+        // assemble values and calculate change
+        $open      = round($last['02. open'], 2);
+        $high      = round($last['03. high'], 2);
+        $low       = round($last['04. low'], 2);
+        $lastClose = round($last['08. previous close'], 2);
+        $change = round($last['09. change'], 2);
+        $percent = round($last['10. change percent'], 2);
+
+        $lastDate = $last['07. latest trading day'];
+
+        // populate data model
+        $quote = new StockQuoteModel();
+        $quote->symbol   = $symbol;
+        $quote->last     = number_format($lastClose, 2);
+        $quote->date     = $lastDate;
+        $quote->change   = number_format($change, 2);
+        $quote->open     = number_format($open, 2);
+        $quote->high     = number_format($high, 2);
+        $quote->low      = number_format($low, 2);
+        $quote->volume   = number_format($last['06. volume'], 0);
+        $quote->percent  = $percent;
+
+        return $quote;
+    }
+
+    /**
+     * Get the quote data from cache or refresh.
+     */
+    public function getHistoryJson($symbol, $expire)
+    {
+        // check for symbol
+        if(empty($symbol))
+        {
+            return false;
+        }
+
+        $cacheKey = $symbol . '-hist';
+
+        // check cache or refresh data
+        if(Craft::$app->cache->get($cacheKey)) 
+        {
+            $data = Craft::$app->cache->get($cacheKey);
+        }
+        else
+        {
+            // update current values or fallback to stale cache
+            $url = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=%s&outputsize=full&apikey=%s";
+            if ($refresh = $this->fetchQuote($symbol, $url))
+            {
+                $data = $refresh;
+                Craft::$app->cache->set($cacheKey, $data, $expire);
+                Craft::$app->cache->set($cacheKey.':stale', $data, 0);
+            }
+            else
+            {
+                $data = Craft::$app->cache->get($cacheKey.':stale');
             }
         }
 
@@ -71,47 +141,12 @@ class StockQuoteService extends Component
         // meta
         $metaData = $data['Meta Data'];
         $lastRefresh = $metaData['3. Last Refreshed'];
-        $timezone = $metaData['5. Time Zone'];
+        // $timezone = $metaData['5. Time Zone'];
 
         // prices
         $timeSeries = $data['Time Series (Daily)'];
-        $last = array_shift($timeSeries);
-        $lastDate = new DateTime($lastRefresh);
-        $lastDate->sub(new DateInterval('P1D'));
-        $prevDate = $lastDate->format('Y-m-d');
-        
-        foreach ($timeSeries as $date => $day) 
-        {
-            if ($date == $prevDate) {
-                $prev = $day;
-                break;
-            }
-        }
 
-        // assemble values and calculate change
-        $open      = round($last['1. open'], 2);
-        $high      = round($last['2. high'], 2);
-        $low       = round($last['3. low'], 2);
-        $lastClose = round($last['4. close'], 2);
-        $prevClose = round($prev['4. close'], 2);
-        $change    = $lastClose - $prevClose;
-        $percent   = round(($change / $prevClose) * 100, 2);
-
-        // populate data model
-        $quote = new StockQuoteModel();
-        $quote->symbol   = $symbol;
-        $quote->timezone = $timezone;
-        $quote->last     = number_format($lastClose, 2);
-        $quote->date     = $lastRefresh;
-        $quote->change   = number_format($change, 2);
-        $quote->open     = number_format($open, 2);
-        $quote->high     = number_format($high, 2);
-        $quote->low      = number_format($low, 2);
-        $quote->volume   = $last['5. volume'];
-        $quote->previous = number_format($prevClose, 2);
-        $quote->percent  = $percent;
-
-        return $quote;
+        return json_encode($timeSeries);
     }
 
     /**
@@ -119,7 +154,7 @@ class StockQuoteService extends Component
      *
      * @see https://www.alphavantage.co/documentation/#daily
      */
-    public function fetchQuote($symbol)
+    public function fetchQuote($symbol, $url)
     {   
         $plugin = StockQuote::$plugin;
         $apiKey = $plugin->getSettings()->apiKey;
@@ -129,8 +164,7 @@ class StockQuoteService extends Component
             Craft::getLogger()->log('StockQuote Error: API Key setting missing.', LogLevel::ERROR, true);
             return false;
         } 
-
-        $url = sprintf("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=%s&apikey=%s", $symbol, $apiKey);
+        $url = sprintf($url, $symbol, $apiKey);
 
         if($response = $this->request($url))
         {
@@ -139,11 +173,6 @@ class StockQuoteService extends Component
             if(isset($data['Error Message']))
             {
                 Craft::getLogger()->log('StockQuote Error: '.$data['Error Message'], LogLevel::ERROR, true);
-                return false;
-            }
-
-            if (sizeof($data) < 2) {
-                Craft::getLogger()->log('StockQuote Error: Invalid or incomplete data.', LogLevel::ERROR, true);
                 return false;
             }
 

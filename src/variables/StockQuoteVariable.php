@@ -34,4 +34,14 @@ class StockQuoteVariable
     {
         return StockQuote::$plugin->stockQuoteService->getQuote($symbol, $expire);
     }
+
+    /**
+     * Fetch history from a single quote.
+     *
+     * {{ craft.stockQuote.getHistoryJson('GOOG') }}
+     */
+    public function getHistoryJson($symbol = null, $expire = 1200)
+    {
+        return StockQuote::$plugin->stockQuoteService->getHistoryJson($symbol, $expire);
+    }
 }
