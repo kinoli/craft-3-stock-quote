@@ -98,7 +98,7 @@ class StockQuoteService extends Component
     }
 
     /**
-     * Get the quote data from cache or refresh.
+     * Get the historical quote data from cache or refresh.
      */
     public function getHistoryJson($symbol, $expire)
     {
