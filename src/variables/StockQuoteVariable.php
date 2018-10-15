@@ -26,7 +26,7 @@ class StockQuoteVariable
     // =========================================================================
 
     /**
-     * Fetch a single quote.
+     * Fetch a single stock quote.
      *
      * {{ craft.stockQuote.getQuote('GOOG') }}
      */
@@ -36,7 +36,7 @@ class StockQuoteVariable
     }
 
     /**
-     * Fetch history from a single quote.
+     * Fetch history from a single stock quote.
      *
      * {{ craft.stockQuote.getHistoryJson('GOOG') }}
      */
