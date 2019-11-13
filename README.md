@@ -40,6 +40,7 @@ Stock Quote works on Craft 2.6.x.
 	{{ quote.volume }}
 	{{ quote.previous }}
 	{{ quote.percent }}
+	{{ quote.price }}
 {% endif %}
 ```
 
@@ -68,7 +69,7 @@ Wrapping the plugin output in a conditional using the Twig’s length filter is 
 {% set quote = craft.stockQuote.getQuote('MSFT', 300) %}
 
 {% if quote|length %}
-	{{ quote.last }}
+	{{ quote.price }}
 {% endif %}
 ```
 

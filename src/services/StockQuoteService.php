@@ -70,17 +70,17 @@ class StockQuoteService extends Component
         }
 
         // prices
-        $last = $data['Global Quote'];
+        $last      = $data['Global Quote'];
 
         // assemble values and calculate change
         $open      = round($last['02. open'], 2);
         $high      = round($last['03. high'], 2);
         $low       = round($last['04. low'], 2);
         $lastClose = round($last['08. previous close'], 2);
-        $change = round($last['09. change'], 2);
-        $percent = round($last['10. change percent'], 2);
-
-        $lastDate = $last['07. latest trading day'];
+        $change    = round($last['09. change'], 2);
+        $percent   = round($last['10. change percent'], 2);
+        $lastDate  = $last['07. latest trading day'];
+        $price     = round($last['05. price'], 2);
 
         // populate data model
         $quote = new StockQuoteModel();
@@ -93,6 +93,7 @@ class StockQuoteService extends Component
         $quote->low      = number_format($low, 2);
         $quote->volume   = number_format($last['06. volume'], 0);
         $quote->percent  = $percent;
+        $quote->price    = number_format($price, 2);
 
         return $quote;
     }

@@ -41,6 +41,7 @@ class StockQuoteModel extends Model
     public $volume = '';
     public $previous = '';
     public $percent = '';
+    public $price = '';
 
     // Public Methods
     // =========================================================================
@@ -61,7 +62,8 @@ class StockQuoteModel extends Model
             ['low', 'string'],
             ['volume', 'string'],
             ['previous', 'string'],
-            ['percent', 'string']
+            ['percent', 'string'],
+            ['price', 'string'],
         ];
     }
 }
