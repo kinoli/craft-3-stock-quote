@@ -2,7 +2,7 @@
     "name": "kinoli/stock-quote",
     "description": "Simple real-time stock quotes from the Alpha Vantage API.",
     "type": "craft-plugin",
-    "version": "1.0.3",
+    "version": "1.1.0",
     "keywords": [
         "craft",
         "cms",
